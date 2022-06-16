@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private AutoCompleteTextView emailAddress;
     private EditText password;
+    private ProgressBar progressBar;
 
     // Firebase Stuff
     private FirebaseAuth firebaseAuth;
@@ -53,6 +55,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
         // Get Firebase Instance
         firebaseAuth = FirebaseAuth.getInstance();
 
@@ -64,6 +67,7 @@ public class LoginActivity extends AppCompatActivity {
         // Get the widgets
         emailAddress = findViewById(R.id.email);
         password = findViewById(R.id.password);
+        progressBar = findViewById(R.id.login_progress);
 
 
 
@@ -81,6 +85,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loginEmailPassWordUser(String email, String pwd) {
 
+        progressBar.setVisibility(View.VISIBLE);
         if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(pwd)) {
             // Use the inbuilt signin function
             firebaseAuth.signInWithEmailAndPassword(email, pwd)
@@ -107,6 +112,7 @@ public class LoginActivity extends AppCompatActivity {
                                             assert value != null;
                                             // Check if value is not empty, that means got something
                                             if (!value.isEmpty()) {
+                                                progressBar.setVisibility(View.INVISIBLE);
 
                                                 // Loop through and get the username
                                                 // We set it with our JournalApi
@@ -133,11 +139,14 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            progressBar.setVisibility(View.INVISIBLE);
 
                         }
                     });
 
         } else {
+            progressBar.setVisibility(View.INVISIBLE);
+
             // Notify user if invalid fields
             Toast.makeText(LoginActivity.this,
                     "Please enter email and password", Toast.LENGTH_LONG).show();

@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.system.StructUtsname;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -26,10 +27,15 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.Date;
+
+import model.Journal;
 import util.JournalApi;
 
 public class PostJournalActivity extends AppCompatActivity implements View.OnClickListener {
@@ -37,6 +43,7 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
     // Access Gallery Code
     // Not useful for now
     // private int GALLERY_CODE = 1;
+    private String TAG = "PostJournalActivity";
 
     // Initialise Widgets
     private Button saveButton;
@@ -74,6 +81,9 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
 
         // Get the instance form Firebase
         firebaseAuth = FirebaseAuth.getInstance();
+
+        // Get storage Reference
+        storageReference = FirebaseStorage.getInstance().getReference();
 
         // Get our Widgets
         progressBar = findViewById(R.id.post_progressBar);
@@ -114,7 +124,7 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
         };
 
 
-        }
+    }
 
 
     @Override
@@ -142,22 +152,79 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
         progressBar.setVisibility(View.VISIBLE);
 
         // Validate them, only do stuff if not empty
+        Log.d("Hello", String.valueOf(imageUri));
+        Log.d("Hello", String.valueOf(imageUri != null));
         if (!TextUtils.isEmpty(title) && !TextUtils.isEmpty(thoughts) && imageUri != null) {
             // Create a path to Journal Images
             // However, each image we add needs to be UNIQUE (we can use timestamps to help us)
-            StorageReference filepath = storageReference
+            Log.d("Hello", "Can enter path");
+            final StorageReference filepath = storageReference
+                    // Go into Journal Images folder
                     .child("journal_images")
+                    // And the unique location of the image
                     .child("my_image_" + Timestamp.now().getSeconds()); // Get unique image ids
 
+            // Put the file into storage
             filepath.putFile(imageUri)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            progressBar.setVisibility(View.INVISIBLE);
 
-                            // TODO: Create a Journal Object
-                            // TODO: Invoke our collectionReference (In Firestore)
-                            // TODO: And save a Journal instance
+                            // Get download Url
+                            // This will allow us to get the image URL
+                            // onSuccess's Uri uri is the one to let us get the url
+                            filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+
+                                    Log.d("Hello", "Can build Journal");
+
+                                    // Get the image URL
+                                    String imageUrl = uri.toString();
+                                    // TODO: Create a Journal Object - model
+                                    // Create our Journal Object, to be added to DB
+                                    Journal journal = new Journal();
+                                    journal.setTitle(title);
+                                    journal.setThought(thoughts);
+                                    journal.setImageUrl(imageUrl);
+                                    journal.setTimeAdded(new Timestamp(new Date()));
+                                    journal.setUserName(currentUserName);
+                                    journal.setUserId(currentUserId);
+
+                                    // TODO: Invoke our collectionReference (In Firestore)
+                                    // Add Journal to the Database
+                                    collectionReference.add(journal)
+                                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                @Override
+                                                public void onSuccess(DocumentReference documentReference) {
+                                                    // Make progress bar invisible since success already
+                                                    progressBar.setVisibility(View.INVISIBLE);
+                                                    Log.d("Hello", "Can add journal");
+
+                                                    // Intent to go to another activity
+                                                    startActivity(new Intent(PostJournalActivity.this,
+                                                            JournalListActivity.class));
+
+                                                    // Call finish to finish the current activity
+                                                    // Since after this we will move to a new activity
+                                                    finish();
+
+                                                }
+                                            })
+                                            .addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Log.d(TAG, "onFaiure: " + e.getMessage());
+
+                                                }
+                                            });
+
+                                    // TODO: And save a Journal instance
+
+                                }
+                            });
+
+
 
 
                         }
@@ -166,6 +233,7 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             progressBar.setVisibility(View.INVISIBLE);
+                            Log.d("Hello", "Failed" + e.getMessage());
                         }
                     });
         } else {

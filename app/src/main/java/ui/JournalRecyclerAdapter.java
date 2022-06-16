@@ -5,6 +5,7 @@ import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -50,7 +51,7 @@ public class JournalRecyclerAdapter extends RecyclerView.Adapter<JournalRecycler
 
         holder.title.setText(journal.getTitle());
         holder.thoughts.setText(journal.getThought());
-//        holder.name.setText(journal.getUserName());
+        holder.name.setText(journal.getUserName());
         imageUrl =journal.getImageUrl();
 
         //Source: https://medium.com/@shaktisinh/time-a-go-in-android-8bad8b171f87
@@ -87,6 +88,8 @@ public class JournalRecyclerAdapter extends RecyclerView.Adapter<JournalRecycler
         public TextView title, thoughts, dateAdded, name;
 
         public ImageView image;
+        public ImageButton shareButton;
+
 
         String userId;
         String username;
@@ -102,6 +105,12 @@ public class JournalRecyclerAdapter extends RecyclerView.Adapter<JournalRecycler
             thoughts = itemView.findViewById(R.id.journal_thought_list);
             dateAdded = itemView.findViewById(R.id.journal_timestamp_list);
             image = itemView.findViewById(R.id.journal_image_list);
+            name = itemView.findViewById(R.id.journal_row_username);
+            shareButton = itemView.findViewById(R.id.journal_row_share_button);
+            shareButton.setOnClickListener(view -> {
+                // Can start another activity once click shareButton
+//                context.startActivity();
+            });
 
         }
     }

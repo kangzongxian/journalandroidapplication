@@ -7,6 +7,9 @@
     app:cardUseCompatPadding="true"
     android:layout_height="wrap_content">
 
+<!--    Add a colour for the like the top part of the picture-->
+<!--    Like that can showcase the name and share button better-->
+<!--    Alpha affects like the opacity I think-->
     <LinearLayout
         android:orientation="horizontal"
         android:elevation="10dp"

@@ -71,7 +71,7 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
     private CollectionReference collectionReference = db.collection("Journal");
 
     // Reference the imageUri
-     private Uri imageUri;
+    private Uri imageUri;
 
 
     @Override
@@ -152,16 +152,14 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
         progressBar.setVisibility(View.VISIBLE);
 
         // Validate them, only do stuff if not empty
-        Log.d("Hello", String.valueOf(imageUri));
-        Log.d("Hello", String.valueOf(imageUri != null));
+
         if (!TextUtils.isEmpty(title) && !TextUtils.isEmpty(thoughts) && imageUri != null) {
             // Create a path to Journal Images
             // However, each image we add needs to be UNIQUE (we can use timestamps to help us)
-            Log.d("Hello", "Can enter path");
-            final StorageReference filepath = storageReference
-                    // Go into Journal Images folder
+            // Go into Journal Images folder
+            // And the unique location of the image
+            StorageReference filepath = storageReference
                     .child("journal_images")
-                    // And the unique location of the image
                     .child("my_image_" + Timestamp.now().getSeconds()); // Get unique image ids
 
             // Put the file into storage
@@ -173,11 +171,11 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
                             // Get download Url
                             // This will allow us to get the image URL
                             // onSuccess's Uri uri is the one to let us get the url
+                            //
                             filepath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                 public void onSuccess(Uri uri) {
 
-                                    Log.d("Hello", "Can build Journal");
 
                                     // Get the image URL
                                     String imageUrl = uri.toString();
@@ -199,7 +197,6 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
                                                 public void onSuccess(DocumentReference documentReference) {
                                                     // Make progress bar invisible since success already
                                                     progressBar.setVisibility(View.INVISIBLE);
-                                                    Log.d("Hello", "Can add journal");
 
                                                     // Intent to go to another activity
                                                     startActivity(new Intent(PostJournalActivity.this,
@@ -214,7 +211,7 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
                                             .addOnFailureListener(new OnFailureListener() {
                                                 @Override
                                                 public void onFailure(@NonNull Exception e) {
-                                                    Log.d(TAG, "onFaiure: " + e.getMessage());
+                                                    Log.d(TAG, "onFailure: " + e.getMessage());
 
                                                 }
                                             });
@@ -223,10 +220,6 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
 
                                 }
                             });
-
-
-
-
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -254,7 +247,6 @@ public class PostJournalActivity extends AppCompatActivity implements View.OnCli
                     if (result != null) {
                         imageView.setImageURI(result);
                         imageUri = result;
-
                     }
 
                 }
